@@ -162,6 +162,12 @@ extern NSString * const kTTTStrikeOutAttributeName;
  */
 @property (nonatomic, assign) TTTAttributedLabelVerticalAlignment verticalAlignment;
 
+///--------------------------------------
+/// @name Getting the Drawing Information
+///--------------------------------------
+
+- (CGPathRef)createTextPath;
+
 ///----------------------------------
 /// @name Setting the Text Attributes
 ///----------------------------------

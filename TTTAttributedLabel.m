@@ -557,6 +557,35 @@ static inline NSAttributedString * NSAttributedStringByScalingFontSize(NSAttribu
     }
 }
 
+#pragma mark -
+
+- (CGPathRef)createTextPath;
+{
+    CTTypesetterRef typesetter = CTFramesetterGetTypesetter(self.framesetter);
+
+    CTLineRef line = CTTypesetterCreateLine(typesetter, CFRangeMake(0, 0));
+
+    CGMutablePathRef stringPath = CGPathCreateMutable();
+    [self.attributedText enumerateAttribute:(NSString *)kCTFontAttributeName inRange:NSMakeRange(0, self.attributedText.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
+        CGGlyph glyphs[range.length];
+        CTFontGetGlyphsForCharacters((CTFontRef)value, (const unichar *)[[self.attributedText.string substringWithRange:range] cStringUsingEncoding:NSUnicodeStringEncoding], glyphs, range.length);
+        
+        CGAffineTransform glyphScale = CGAffineTransformMakeScale(1.0f, -1.0f);
+        for (NSUInteger i = range.location; i < range.location + range.length; i++)
+        {
+            CGFloat xOffset = CTLineGetOffsetForStringIndex(line, i, NULL);
+            CGAffineTransform glyphTranslation = CGAffineTransformMakeTranslation(xOffset, CTFontGetSize((CTFontRef)value) - 1.0f);
+            
+            CGPathRef glyphPath = CTFontCreatePathForGlyph((CTFontRef)value, glyphs[i], &glyphScale);
+            CGPathAddPath(stringPath, &glyphTranslation, glyphPath);
+            CGPathRelease(glyphPath);
+        }
+    }];
+    
+    CFRelease(line);
+    return stringPath;
+}
+
 #pragma mark - TTTAttributedLabel
 
 - (void)setText:(id)text {
